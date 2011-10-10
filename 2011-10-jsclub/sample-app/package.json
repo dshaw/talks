@@ -1,0 +1,14 @@
+{
+    "name": "dshaw-talks-2011-10-jsclub"
+  , "version": "0.0.1"
+  , "description": "Socket.IO RedisStore Sample App"
+  , "keywords": ["socket.io", "store", "redis", "redisstore"]
+  , "author": "Daniel D. Shaw <dshaw@dshaw.com> (http://dshaw.com)"
+  , "dependencies": {
+        "connect": "1.7.1"
+      , "request": "2.1.1"
+      , "socket.io": "https://github.com/LearnBoost/socket.io/tarball/master"
+    }
+  , "main": "app"
+  , "engines": { "node": ">= 0.4.0" }
+}
