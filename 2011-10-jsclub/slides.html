@@ -55,7 +55,7 @@
 
   io.configure(function () {
    io.set('store', new RedisStore())
-  });
+  })
           </pre>
 
           <h3 class="inverted">That's it</h3>
@@ -100,7 +100,7 @@
         symbol: symbols[n]
       , price:
             (Math.random()*1000).toFixed(2)
-    });
+    })
   }
 
   setInterval(dataStream, 800)

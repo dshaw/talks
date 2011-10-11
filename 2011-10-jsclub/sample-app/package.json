@@ -6,7 +6,7 @@
   , "author": "Daniel D. Shaw <dshaw@dshaw.com> (http://dshaw.com)"
   , "dependencies": {
         "connect": "1.7.1"  
-      , "socket.io": "https://github.com/dshaw/socket.io/tarball/dev%2Fredis"
+      , "socket.io": "0.8.5"
       , "socket.io-announce": ""
     }
   , "main": "app"
