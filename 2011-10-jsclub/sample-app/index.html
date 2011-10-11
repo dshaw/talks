@@ -53,8 +53,10 @@
     socket.on('quote', function (data) {
       $('<span/>', { id: data.id, html: data.symbol + ' : ' + data.price }).appendTo('#ticker');
 
+      // if the last digit of the prices matches the id, buy.
       var m = ((data.price).match(/[-+]?([0-9]*([0-9]))?\.[0-9]+/))
         , watch = m && m[2];
+
       if (nodeId && watch == nodeId) {
         $('#'+data.id).addClass('reserved');
         data.buyer = nodeId;
