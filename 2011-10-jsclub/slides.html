@@ -1,0 +1,125 @@
+<!doctype html>  
+<html lang="en">
+	
+	<head>
+		<meta charset="utf-8">
+		<title>@dshaw - Scaling Socket.io</title>
+		<link href='http://fonts.googleapis.com/css?family=Crimson+Text:regular,600,bold' rel='stylesheet' type='text/css'>
+		<link rel="stylesheet" href="slides-assets/slideshow.css">
+	</head>
+	
+	<body>
+		
+		<div id="main">
+			
+			<section>
+				<h1>Scaling Socket.io</h1>
+				<h3 class="inverted">Daniel Shaw</h3>
+        <p style="margin-top: 1.2em; font-size: 70%;">
+          <span class="key">←</span><span class="key">→</span>
+          <img class=avatar src="http://si0.twimg.com/profile_images/1552591406/angry_unicorn.png">
+          <span class="key">↑</span><span class="key">↓</span>
+        </p>
+				<h3 class="inverted">@dshaw</h3>
+			</section>
+			
+			<section>
+          <h2>Socket.io</h2>
+          <h3 style="margin-top: 1.2em;">RedisStore</h3>
+          <h3>Announce</h3>
+          <h3>Quick Demo</h3>
+			</section>
+
+      <section>
+        <h2>Socket.io</h2>
+        <img src="http://cl.ly/2F2P2x1v271U3C442J0y/socketio2.png">
+      </section>
+
+			<section>
+        <section>
+          <h2>RedisStore</h2>
+          <img src="http://f.cl.ly/items/0G2A1c3d18352M3p2b2S/socketioscale.svg">
+        </section>
+        <section>
+          <h2>Redis Pub/Sub Dispatch</h2>
+          <img src="http://f.cl.ly/items/3F0t2f0A3W0d1Q0r0k1o/socketioredis.png">
+        </section>
+        
+        <section>
+          <h3>Easy to get started</h3>
+            
+          <pre>
+  var sio = require('socket.io')
+    , RedisStore = sio.RedisStore
+    , io = sio.listen()
+
+  io.configure(function () {
+   io.set('store', new RedisStore())
+  })
+          </pre>
+
+          <h3 class="inverted">That's it</h3>
+      </section>
+    </section>
+
+      <section>
+        <section>
+          <h2>Socket.io Rooms</h2>
+          <p>Setup in Socket.io</p>
+          <pre>
+  sio.on('connection', function (socket) {
+    socket.join('traders')
+  })
+          </pre>
+          <br>
+          <p>...elsewhere, in your app</p>
+          <pre>
+  app.post('/trades', function (req, res) {
+    io.sockets.in('traders')
+        .emit('trade', req.body)
+  })
+          </pre>
+        </section>
+
+        <section>
+          <h2>socket.io-announce</h2>
+          <img src="http://f.cl.ly/items/041W1V3P1x282O2a2k0k/socketioannounce.png">
+        </section>
+
+        <section>
+          <h2>socket.io-announce</h2>
+          <pre>
+  var ioa = require('socket.io-announce')
+    , announce = ioa.createClient()
+
+  var symbols = 'THOO GOOF EXIT ALPP'
+               +'RIGM OPPL HPBG'.split(' ')
+
+  function dataStream () {
+    announce.emit('quote', {
+        symbol: symbols[n]
+      , price:
+            (Math.random()*1000).toFixed(2)
+    })
+  }
+
+  setInterval(dataStream, 800)
+            </pre>
+        </section>
+		  </section>
+
+			<section>
+				<h1>Demo Time!</h1>
+				<h3 class="inverted">@dshaw</h3>
+				
+			  <p>More at: <a href="http://github.com/dshaw">github.com/dshaw</a></p>
+				
+				<p style="margin-top:2em; font-size:60%">Slide deck thanks to: <a href="http://twitter.com/paul_irish">@paul_irish</a></p>
+			</section>
+			
+		</div>
+		
+		<script src="slides-assets/slideshow.js"></script>
+
+	</body>
+</html>
