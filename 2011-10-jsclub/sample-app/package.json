@@ -7,7 +7,7 @@
   , "dependencies": {
         "connect": "1.7.1"  
       , "socket.io": "0.8.5"
-      , "socket.io-announce": ""
+      , "socket.io-announce": "0.1.0"
     }
   , "main": "app"
   , "engines": { "node": ">= 0.4.0" }
