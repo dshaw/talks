@@ -1,0 +1,280 @@
+<!doctype html>  
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<title>@dshaw - Production Node.js Secrets</title>
+		<link href='http://fonts.googleapis.com/css?family=Crimson+Text:regular,600,bold' rel='stylesheet' type='text/css'>
+		<link rel="stylesheet" href="slides-assets/slideshow.css">
+    <style>
+      #main {
+        height: 400px;
+        margin-top: -360px;
+      }
+    </style>
+	</head>
+
+	<body>
+
+		<div id="main">
+
+			<section>
+				<h1>Production Node.js Secrets</h1>
+				<h3 class="inverted">Daniel Shaw</h3>
+          <p class="intro">
+            <span class="key">←</span><span class="key">→</span>
+            <img class=avatar src="./slides-assets/angry_unicorn.png">
+            <span class="key">↑</span><span class="key">↓</span>
+          </p>
+				<h3 class="inverted">@dshaw</h3>
+			</section>
+			
+			<section>
+        <section>
+          <h2>Startup Experience</h2>
+          <p><img class=highlight src="./slides-assets/startuplife.jpg"></p>
+          <h3>Storify</h3>
+          <h3>Spreecast</h3>
+          <h3>Voxer</h3>
+        </section>
+        <section>
+          <h2>Storify</h2>
+          <p><img class=highlight src="./slides-assets/storify.jpg"></p>
+          <h3>Express</h3>
+          <h3>MongoDB / Mongoose</h3>
+          <h3>Redis</h3>
+        </section>
+        <section>
+          <h2>Spreecast</h2>
+          <p><img class=highlight src="./slides-assets/spreecast.png" style="padding: 10px"></p>
+          <h3>Socket.io</h3>
+          <h3>Redis</h3>
+          <h3>(Express)</h3>
+        </section>
+        <section>
+          <h2>Voxer</h2>
+          <p><img class=highlight src="./slides-assets/voxer_walkie.png"></p>
+          <h3>Mobile</h3>
+          <h3>Redis</h3>
+          <h3>Riak</h3> 
+        </section>
+      </section>
+
+			<section>
+        <section>
+          <h2>Building Apps for Production Deployment</h2>
+          <p>Old School: Monolithic Apps</p>
+          <img src="./slides-assets/rails.png" style="width: 120px">
+          <p>Rails apps pass everything through one master process and delegate.</p>
+          <p>
+            You *can* build Node apps like this<br>
+            ...but you shouldn't.
+          </p>
+          <p style="color: rgba(0,0,0,.4)">(Check out NodeUp 6 for full rant.)</p>
+        </section>
+        <section>
+          <h2>Building Apps for Production Deployment</h2>
+          <p>
+            The Event Loop is your friend,<br>
+            until it's your enemy.
+          </p>
+          <pre>
+console.time('blocking-loop')
+for (var i = 0, len = 100000000; i < len; i++) { ; }
+console.timeEnd('blocking-loop');
+          </pre>
+          <p>Don't block.</p>
+          <p>Don't stop the event loop.</p>
+        </section>
+        <section>
+          <h2>Production Node.js</h2>
+          <h3>2+ Processes</h3>
+          <p>Think horizontal early.</p>
+          <p>Most Node frameworks have a in Memory mode for local development. GTFO.</p>
+          <p>Use Cluster or Mixture to prototype locally.</p>
+        </section>
+        <section>
+          <h2>K.I.S.S.</h2>
+          <h3>Keep It Small and Simple</h3>
+          <p>Small, focused processes > Monolithic</p>
+          <p>Applies to both modules and apps.</p>
+          <p>Node.js core is kept intentionally simple.</p>
+        </section>
+      </section>
+
+      <section>
+        <section>
+          <h2>Node App Sanity</h2>
+          <p>Listen to these events:</p>
+          <ul class="bullet-points">
+            <li>process Event: ‘uncaughtException’</li>
+            <li>net Event: ‘error’</li>
+          </ul>
+
+          <p><br>
+
+          <p>Longer stack traces</p>
+          <pre>
+# default is 10.
+Error.stackTraceLimit = 25
+
+# MOAR...
+# Error.stackTraceLimit = Infinity
+          </pre>
+        </section>
+        <section>
+          <h2>process uncaughtException</h2>
+          <h3>Choose one:</h3>
+          <p>Log, trace, exit(1).</p>
+          <pre>
+process.on('uncaughtException', function (err) {
+  console.error('uncaughtException:', err.message)
+  console.error(err.stack)
+  process.exit(1)
+})
+          </pre>
+          <p>Bury.</p>
+          <pre>
+process.on('uncaughtException', function (err) {
+  console.error('Caught exception: ' + err)
+})
+          </pre>
+        </section>
+        <section>
+          <h2>net error</h2>
+          <h3>This means:</h3>
+          <ul class="bullet-points" style="margin-bottom: 10px">
+            <li>net.Server</li>
+            <li>tls.Server</li>
+            <li>http.Server</li>
+            <li>https.Server</li>
+            <li>
+              ... and anything that inherits from these or creates an instance of the above.
+              <sup title="Which is just about everything created with Node.js.">*</sup>
+            </li>
+          </ul>
+          <pre>
+server.on('error', function (err) {
+  console.error(err)
+})
+          </pre>
+          <p>Remember: http(s), tls Servers inherit from net.</p>
+        </section>
+      </section>
+
+      <section>
+        <section>
+          <h2>Express</h2>
+          <p>Run in production mode in production</p>
+          <pre>
+$ NODE_ENV=production node app.js
+          </pre>
+        </section>
+        <section>
+          <h2>Express Sessions</h2>
+          <p>connect-redis</p>
+          <p>(2+ processes)</p>
+          <pre>
+var SessionStore = require('connect-redis')
+app.configure(function(){
+  this.use(express.session({
+    key: 'skeleton'
+  , secret: 's3cret'
+  , store: new SessionStore({
+      cookie: { domain: '.example.com' }
+    , db: 1 // redis db
+    , host: 'redis.example.com'
+    })
+  }))
+})
+          </pre>
+        </section>
+      </section>
+
+      <section>
+        <section>
+          <h2>Socket.io</h2>
+          <p>Run in production mode in production</p>
+          <pre>
+$ NODE_ENV=production node app.js
+          </pre>
+          <p>Rinse. Repeat.</p>
+        </section>
+        <section>
+          <h2>Socket.io RedisStore</h2>
+          <p>(2+ processes)</p>
+          <pre>
+var sio = require('socket.io')
+  , RedisStore = sio.RedisStore
+  , io = sio.listen()
+
+io.configure(function () {
+  io.set('store', new RedisStore({
+    host: 'http://redis.example.com'
+  }))
+})
+          </pre>
+        </section>
+        <section>
+          <h2>Socket.io RedisStore</h2>
+          <h3>Production Config</h3>
+          <pre>
+var redis = require('redis')
+  , redisClient = redis
+      .createClient(<span title="defined elsewhere">port</span>, <span title="defined elsewhere">hostname</span>)
+  , redisSub = redis
+      .createClient(<span title="defined elsewhere">port</span>, <span title="defined elsewhere">hostname</span>)
+
+redisClient.on('error', function (err) {
+  console.error(err)
+})
+
+redisSub.on('error', function (err) {
+  console.error(err)
+})
+          </pre>
+          <p>Setup AUTH and DB here too if you need them.</p>
+        </section>
+        <section>
+          <h2>Socket.io RedisStore</h2>
+          <h3>Production Config (cont.)</h3>
+          <pre>
+io.configure(function () {
+  io.set('store', new RedisStore({
+    nodeId: function () { return <span title="defined elsewhere">nodeId</span> }
+  , redisPub: redisPub
+  , redisSub: redisSub
+  , redisClient: redisClient
+  }))
+})
+          </pre>
+        </section>
+        <section>
+          <h2>Socket.io RedisStore</h2>
+          <h3>Production Config (cont.)</h3>
+          <p>
+            Warning: node_redis loses subscriptions<br>
+            on re-connect.
+          </p>
+          <p>
+            Hopefully, this will be patched soon.
+            In the meantime, the safest thing to do is restart your Socket.io app.
+          </p>
+        </section>
+      </section>
+
+      <section>
+        <h1>Discuss...</h1>
+        <h3 class="inverted">@dshaw</h3>
+
+        <p>More at: <a href="http://github.com/dshaw">github.com/dshaw</a></p>
+
+        <p style="margin-top:2em; font-size:60%">Slide deck thanks to: <a href="http://twitter.com/paul_irish">@paul_irish</a></p>
+      </section>
+
+		</div>
+
+		<script src="slides-assets/slideshow.js"></script>
+
+	</body>
+</html>
