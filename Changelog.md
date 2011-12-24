@@ -1,4 +1,10 @@
 
+2011-12-rome-nodejs / 2011-12-23
+====================================
+
+  * "Production Node.js Secrets"
+  * Production tips for Node.js, Express and Socket.io.
+
 2011-10-jsclub / 2011-10-11
 ====================================
 
